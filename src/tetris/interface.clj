@@ -73,7 +73,7 @@
 
 (defn animation [x]
   (when running
-    (send-off *agent* #'animation))  
+    (send-off *agent* animation))
   (Thread/sleep animation-sleep-ms)
   (.repaint @panel)
   nil)
@@ -82,7 +82,7 @@
 
 (defn gravity [x]
   (when gravity-running
-    (send-off *agent* #'gravity))
+    (send-off *agent* gravity))
   (if (:gameover @state)
      (reset! state (build-state))
      (swap! state d))
