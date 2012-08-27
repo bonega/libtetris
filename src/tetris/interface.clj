@@ -3,10 +3,7 @@
    (java.awt Color Dimension)
    (java.awt.event KeyListener)
    (javax.swing JFrame JOptionPane JPanel))
-  (:use clojure.contrib.import-static
-	[tetris.core :only (build-state commit-block grid->squares r l d rot)]))
-
-(import-static java.awt.event.KeyEvent VK_LEFT VK_RIGHT VK_UP VK_DOWN)
+  (:use [tetris.core :only (build-state commit-block grid->squares r l d rot)]))
 
 (def *xsize* 215)
 (def *ysize* 440)
