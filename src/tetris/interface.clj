@@ -5,15 +5,15 @@
    (javax.swing JFrame JOptionPane JPanel))
   (:use [tetris.core :only (build-state commit-block grid->squares r l d rot)]))
 
-(def *xsize* 215)
-(def *ysize* 440)
+(def xsize 215)
+(def ysize 440)
 
 (def colormap {1 Color/BLACK
 	       2 Color/RED
 	       3 Color/BLUE})
 
-(def *animation-sleep-ms* 15)
-(def *gravity-sleep-ms* 400)
+(def animation-sleep-ms 15)
+(def gravity-sleep-ms 400)
 
 (def running true)
 (def gravity-running true)
@@ -22,7 +22,7 @@
   (doseq [row (-> state commit-block :grid)]
     (println (apply str row))))
 
-(defn clear [g] (.clearRect g 0 0 *xsize* *ysize*))
+(defn clear [g] (.clearRect g 0 0 xsize ysize))
 
 (defn draw-square [{:keys [x y color]} g]
   (let [x (* x 20)
@@ -66,7 +66,7 @@
     (.add @panel)
     (.pack)
     (.setVisible true)
-    (.setSize (java.awt.Dimension. *xsize* *ysize*))
+    (.setSize (java.awt.Dimension. xsize ysize))
     (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)))
 
 (def animator (agent nil))
@@ -74,7 +74,7 @@
 (defn animation [x]
   (when running
     (send-off *agent* #'animation))  
-  (Thread/sleep *animation-sleep-ms*)
+  (Thread/sleep animation-sleep-ms)
   (.repaint @panel)
   nil)
 
@@ -83,8 +83,10 @@
 (defn gravity [x]
   (when gravity-running
     (send-off *agent* #'gravity))
-  (swap! state d)
-  (. Thread (sleep *gravity-sleep-ms*))
+  (if (:gameover @state)
+     (reset! state (build-state))
+     (swap! state d))
+  (. Thread (sleep gravity-sleep-ms))
   nil)
 
 (defn setup []
