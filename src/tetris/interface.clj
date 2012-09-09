@@ -1,16 +1,18 @@
 (ns tetris.interface
-  (:import
-   (java.awt Color Dimension)
-   (java.awt.event KeyListener)
-   (javax.swing JFrame JOptionPane JPanel))
-  (:use [tetris.core :only (build-state commit-block grid->squares r l d rot)]))
+  (:use [tetris.core :only (build-state commit-block grid->squares r l d rot)]
+        seesaw.core
+        seesaw.dev
+        seesaw.graphics
+        seesaw.border
+        seesaw.color)
+  (:require [seesaw.bind :as b]))
 
 (def xsize 215)
 (def ysize 440)
 
-(def colormap {1 Color/BLACK
-	       2 Color/RED
-	       3 Color/BLUE})
+(def colormap {1 (to-color :black)
+ 	       2 (to-color :red)
+ 	       3 (to-color :blue)})
 
 (def animation-sleep-ms 15)
 (def gravity-sleep-ms 400)
@@ -31,69 +33,60 @@
       (.setColor (colormap color))
       (.fillRect x y 20 20))))
 
-(defn draw-state [state g]
+(defn draw-state [c g state]
   (let [squares (-> state commit-block :grid grid->squares)]
     (do (clear g)
-	(doseq [square squares] (draw-square square g)))))
+        (doseq [square squares] (draw-square square g)))))
 
-(def state (atom nil))
-(def panel (atom nil))
-(def frame (atom nil))
+
+(defn make-panel [state]
+  (canvas :id :board :paint #(draw-state %1 %2 @state) :preferred-size [400 :by 400]))
+
+(defn make-frame [state]
+  (let [f (frame :title "Clojure Tetris"
+                 :visible? true
+                 :on-close :dispose
+                 :content (border-panel :id :bord
+                                        :hgap 10 :vgap 10
+                                        :east   (text :text 0 :id :lines)
+                                        :west (make-panel state)))]
+    f))
 
 (def movemap {37 l
 	      38 rot
 	      39 r
 	      40 d})
 
-(defn handle-key [k]
-  (let [key (.getKeyCode k)]
-    (when (movemap key)
-      (swap! state (movemap key)))))
+(defn handle-key [key state]
+  (when (movemap key)
+      (swap! state (movemap key))))
 
-(defn make-panel []
-  (doto
-    (proxy [JPanel KeyListener] []
-      (paintComponent [g]
-        (proxy-super paintComponent g)
-	(draw-state @state g))
-      (keyPressed [e] (handle-key e))
-      (keyReleased [e])
-      (keyTyped [e]))
-    (.setFocusable true)))
-
-(defn make-frame []
-  (doto (JFrame. "Tetris")
-    (.add @panel)
-    (.pack)
-    (.setVisible true)
-    (.setSize (java.awt.Dimension. xsize ysize))
-    (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)))
-
-(def animator (agent nil))
-
-(defn animation [x]
+(defn animation [{:keys [state f] :as appstate}]
   (when running
     (send-off *agent* animation))
   (Thread/sleep animation-sleep-ms)
-  (.repaint @panel)
-  nil)
+  (config! (select f [:#lines]) :text (:lines @state))
+  (repaint! (select f [:#board]))
+  appstate)
 
-(def gravitator (agent nil))
-
-(defn gravity [x]
+(defn gravity [state]
   (when gravity-running
     (send-off *agent* gravity))
   (if (:gameover @state)
      (reset! state (build-state))
      (swap! state d))
-  (. Thread (sleep gravity-sleep-ms))
-  nil)
+  (Thread/sleep gravity-sleep-ms)
+  state)
 
 (defn setup []
-  (do
-    (reset! state (build-state))
-    (reset! panel (make-panel))
-    (reset! frame (make-frame))
-    (.addKeyListener @panel @panel)
+  (let [state (atom (build-state))
+        f (make-frame state)
+        app-state {:f f :state state}
+        animator (agent app-state)
+        gravitator (agent state)]
+    (native!)
+    (-> f pack! show!)
+    (listen (select f [:#board]) :key-pressed (partial handle-key state))
     (send-off animator animation)
-    (send-off gravitator gravity)))
+    (send-off gravitator gravity)
+    (merge app-state {:animator animator :gravitator gravitator})))
