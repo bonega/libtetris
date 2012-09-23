@@ -140,14 +140,12 @@
       (valid-state? (update-in state [:block kw] f))
       (f-fail state)))
 
-(defn- draw-block [state] 
+(defn- take-block [state] 
   (or (valid-state? (assoc state :block (:next-block state) :next-block (rand-nth blocks)))
       (assoc state :gameover true :block nil)))
-
-
 
 (defn rot [state] (transform #(mod (inc %) (-> state :block :rotations count)) :current-rot identity state))
 (defn l [state] (transform dec :x identity state))
 (defn r [state] (transform inc :x identity state))
-(defn d [state] (let [fail-f #(-> % commit-block clear-lines draw-block)]
+(defn d [state] (let [fail-f #(-> % commit-block clear-lines take-block)]
 		  (transform inc :y fail-f state)))
