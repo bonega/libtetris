@@ -2,18 +2,20 @@
 
 Example of a functional Tetris implemented in Clojure.
 
+The core logic is completely functional.
+There is a basic seesaw-version in tetris.interface 
+
 ## Usage
 
+``` clojure
 (-> (build-state) r d d rot d d)
+```
 
-The core logic is completely functional.
-There is a basic swing-version in tetris.interface 
-
-FIXME: write
+This will return an immutable state.
 
 ## Installation
 
-FIXME: write
+Just clone it into a local dir and do <tt>lein deps</tt>
 
 ## License
 
