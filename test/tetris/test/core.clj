@@ -9,7 +9,10 @@
 (refer-private 'tetris.core)
 
 (def state (assoc (build-state) :block t-block ))
+(def drop-states (iterate drop-block state))
 
+
+;.;. Without work, all life goes rotten. -- Camus
 (facts "rotations"
        (-> state rot rot rot rot) => state
        (rot state) =not=> state)
@@ -18,10 +21,20 @@
        (-> state r l) => state
        (l state) =not=> state
        (r state) =not=> state
-       (d state) =not=> state)
+       (d state) =not=> state
+       (nth (iterate drop-block state) 15) => #(:gameover %)
+       )
 
 (facts "inside board" (-> (assoc-in state [:block :x] 10) valid-state?) => falsey
   (-> (assoc-in state [:block :x] -1) valid-state?) => falsey
   (-> (assoc-in state [:block :y] 30) valid-state?) => falsey
   (-> (assoc-in state [:block :y] -1) valid-state?) => falsey
   (valid-state? state) => state)
+
+
+;; (facts "speed"
+;;   (speed 1) => 500
+;;   (speed 10) => 50)
+
+(facts "events"
+  (-> state drop-block (get-event :new-block)) => true)
