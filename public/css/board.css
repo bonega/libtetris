@@ -1,0 +1,31 @@
+div.grid{
+    border:2px solid #000000;
+    background:#A9A9A9;
+}
+
+div#board{
+    width:200px;
+    float: left;
+}
+
+div#next-block{
+    margin-left:5px;
+    width:60px;
+    float: left;
+}
+
+h1{
+    font-size: 16px;
+    margin-right: 20px;
+    float: left;
+}
+
+h1#score-label{
+    clear: both;
+}
+
+a#github-link{
+    float: left;
+    clear: both;
+}
+

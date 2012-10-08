@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Clojurescript Tetris</title>
+    <link type="text/css" rel="stylesheet" href="css/board.css">
+  </head>
+  <body>
+    <div id="content">
+      <script type="text/javascript">var CLOSURE_NO_DEPS = true;</script>
+      <script type="text/javascript" src="out/main.js"></script>
+      <div id="board" class="grid">
+        <canvas id="board" width="200" height="400">
+          Your browser does not support HTML5 Canvas.
+        </canvas>
+      </div>
+      <div id="next-block" class="grid">
+        <canvas id="next-block" width="60" height="80">
+          Your browser does not support HTML5 Canvas.
+        </canvas>
+      </div>
+      <h1 id=score-label>score:</h1>
+      <h1 id=score>0</h1>
+      <h1 id=lines-label>lines:</h1>
+      <h1 id=lines>0</h1>
+      <h1 id=level-label>level:</h1>
+      <h1 id=level>0</h1>
+      <button id="restart-button" type="button" name="something">restart</button>
+      <a id="github-link" href="https://github.com/bonega/tetris/tree/clojurescript">Github</a>
+    </div>
+  </body>
+</html>

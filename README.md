@@ -1,9 +1,11 @@
 # tetris
 
-Example of a functional Tetris implemented in Clojure.
+Example of a functional Tetris implemented in Clojurescript.
 
 The core logic is completely functional.
-There is a basic seesaw-version in tetris.interface 
+There is a gui in tetris.interface 
+
+Have a look at a running example at http://clojure-tetris.herokuapp.com
 
 ## Usage
 
@@ -12,10 +14,6 @@ There is a basic seesaw-version in tetris.interface
 ```
 
 This will return an immutable state.
-
-## Installation
-
-Just clone it into a local dir and do <tt>lein deps</tt>
 
 ## License
 

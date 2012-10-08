@@ -1,1 +1,5 @@
-/target/stale/dependencies
+/target/
+.lein-*
+crossover-cljs/
+out/
+.env
