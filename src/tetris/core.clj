@@ -1,104 +1,104 @@
-(ns tetris.core)
+(ns tetris.core
+  (:use [tetris.scoring :only [calc-level score-lines]]))
 
 (def columns 10)
 (def rows 20)
 
-(defrecord Block [x y rotations current-rot type])
+(defrecord Block [x y rotations current-rot])
 
-(defmacro defblock [name & rotations]
-  `(def ~name (Block. 4 0 [~@rotations] 0 ~(keyword name))))
+(defn make-block [& rotations]
+  (Block. 4 0 rotations 0))
 
-(defblock i-block 
-  [[ 0 2 ]
-   [ 0 2 ]
-   [ 0 2 ]
-   [ 0 2 ] ]    
-    
-  [[ 0 0 0 0 ]
-   [ 2 2 2 2 ] ])
+(def i-block (make-block
+              [[ 0 1 ]
+               [ 0 1 ]
+               [ 0 1 ]
+               [ 0 1 ] ]
 
-(defblock s-block 
-  [[ 0 3 3 ]
-   [ 3 3 0 ] ] 
-   
-  [[ 0 3 0 ]
-   [ 0 3 3 ]
-   [ 0 0 3 ] ])
+              [[ 0 0 0 0 ]
+               [ 1 1 1 1 ] ]))
 
-(defblock z-block 
-  [[ 1 1 0 ]
-   [ 0 1 1 ] ]  
-  
-  [[ 0 0 1 ]
-   [ 0 1 1 ]
-   [ 0 1 0 ] ])
+(def s-block (make-block
+              [[ 0 2 2 ]
+               [ 2 2 0 ] ]
 
-(defblock o-block 
-  [[ 0 0 0 ]
-   [ 0 1 1 ]
-   [ 0 1 1 ] ])
+              [[ 0 2 0 ]
+               [ 0 2 2 ]
+               [ 0 0 2 ] ]))
 
-(defblock t-block 
-  [[ 1 1 1 ]
-   [ 0 1 0 ] ]
-    
-  [[ 0 1 0 ]
-   [ 1 1 0 ]
-   [ 0 1 0 ] ]
-    
-  [[ 0 1 0 ]
-   [ 1 1 1 ] ]
-    
-  [[ 0 1 0 ]
-   [ 0 1 1 ]
-   [ 0 1 0 ] ])
+(def z-block (make-block
+              [[ 3 3 0 ]
+               [ 0 3 3 ] ]
 
-(defblock l-block 
-  [[ 1 0 0 ]
-   [ 1 0 0 ]
-   [ 1 1 0 ] ]
-    
-  [[ 0 0 0 ]
-   [ 1 1 1 ]
-   [ 1 0 0 ] ]
-    
-  [[ 1 1 0 ]
-   [ 0 1 0 ]
-   [ 0 1 0 ] ]
-    
-  [[ 0 0 0 ]
-   [ 0 0 1 ]
-   [ 1 1 1 ] ])
+              [[ 0 0 3 ]
+               [ 0 3 3 ]
+               [ 0 3 0 ] ]))
 
-(defblock j-block 
-  [[ 0 1 0 ]
-   [ 0 1 0 ]
-   [ 1 1 0 ] ]
-      
-  [[ 0 0 0 ]
-   [ 1 0 0 ]
-   [ 1 1 1 ] ]
+(def o-block (make-block
+              [[ 0 0 0 ]
+               [ 0 4 4 ]
+               [ 0 4 4 ] ]))
 
-  [[ 1 1 0 ]
-   [ 1 0 0 ]
-   [ 1 0 0 ] ]
+(def t-block (make-block
+              [[ 5 5 5 ]
+               [ 0 5 0 ] ]
 
-  [[ 0 0 0 ]
-   [ 1 1 1 ]
-   [ 0 0 1 ] ])
+              [[ 0 5 0 ]
+               [ 5 5 0 ]
+               [ 0 5 0 ] ]
+
+              [[ 0 5 0 ]
+               [ 5 5 5 ] ]
+
+              [[ 0 5 0 ]
+               [ 0 5 5 ]
+               [ 0 5 0 ] ]))
+
+(def l-block (make-block
+              [[ 6 0 0 ]
+               [ 6 0 0 ]
+               [ 6 6 0 ] ]
+
+              [[ 0 0 0 ]
+               [ 6 6 6 ]
+               [ 6 0 0 ] ]
+
+              [[ 6 6 0 ]
+               [ 0 6 0 ]
+               [ 0 6 0 ] ]
+
+              [[ 0 0 0 ]
+               [ 0 0 6 ]
+               [ 6 6 6 ] ]))
+
+(def j-block (make-block
+              [[ 0 7 0 ]
+               [ 0 7 0 ]
+               [ 7 7 0 ] ]
+
+              [[ 0 0 0 ]
+               [ 7 0 0 ]
+               [ 7 7 7 ] ]
+
+              [[ 7 7 0 ]
+               [ 7 0 0 ]
+               [ 7 0 0 ] ]
+
+              [[ 0 0 0 ]
+               [ 7 7 7 ]
+               [ 0 0 7 ] ]))
 
 (def blocks [i-block j-block l-block o-block s-block t-block z-block])
 
 (defrecord Square [x y color])
-(defrecord State [grid block next-block score lines])
+(defrecord State [grid block next-block score lines level])
 (def empty-row (vec (repeat columns 0)))
-
-(defn- occupied? [square] (-> square :color pos?))
 
 (defn- row->squares [row y] (map-indexed (fn [x v] (Square. x y v)) row))
 
 (defn grid->squares [grid]
-  (let [ind-grid (map-indexed (fn [y row] (row->squares row y)) grid)]
+  (let [ind-grid (map-indexed (fn [y row] (row->squares row y)) grid)
+        occupied? (comp pos? :color)]
     (filter occupied? (flatten ind-grid))))
 
 (defn- set-square [grid {:keys [x y color] :as square}]
@@ -109,9 +109,12 @@
 (defn- set-squares [g squares]
   (reduce set-square g squares))
 
-(defn commit-block [{:keys [grid block] :as state}] 
-  (let [{:keys [rotations current-rot x y]} block
-        squares (grid->squares (get rotations current-rot))
+(defn block->grid [{:keys [rotations current-rot]}]
+  (nth rotations current-rot))
+
+(defn commit-block [{:keys [grid block] :as state}]
+  (let [{:keys [x y]} block
+        squares (-> block block->grid grid->squares)
 	offset  #(merge-with + % (Square. x y 0))
 	offset-squares (map offset squares)
 	new-grid (set-squares grid offset-squares)]
@@ -124,28 +127,56 @@
 	block (rand-nth blocks)
 	next-block (rand-nth blocks)
 	score 0
-	lines 0]
-   (State. grid block next-block score lines)))
+	lines 0
+        level 0]
+   (State. grid block next-block score lines level)))
 
-(defn- clear-lines [{:keys [grid lines] :as state}]
-  (let [row-full? (fn [row] (every? pos? row))
-	removed-lines (count (filter row-full? grid))
-        removed-grid (remove row-full? grid)
-	new-lines (repeat removed-lines empty-row)
-	new-grid (vec (concat new-lines removed-grid))]
-    (assoc state :lines (+ lines removed-lines) :grid new-grid)))
+(def row-full? (partial every? pos?))
+
+(defn- assoc-event [state kw v]
+  (with-meta state (merge (meta state) {kw v})))
+
+(defn get-event [state kw]
+  (-> state meta kw))
+
+(defn new-block? [state]
+  (get-event state :new-block))
+
+(defn- clear-lines [{:keys [grid lines score level] :as state}]
+  (if (not-any? row-full? grid)
+    state
+    (let [removed-lines (count (filter row-full? grid))
+          removed-grid (remove row-full? grid)
+          new-lines (repeat removed-lines empty-row)
+          new-grid (vec (concat new-lines removed-grid))
+          new-score (+ score (score-lines removed-lines level))
+          completed-lines (+ lines removed-lines)]
+      (-> state (assoc :lines completed-lines :grid new-grid
+             :score new-score :level (calc-level completed-lines))
+          (assoc-event :lines-cleared)))))
+
 
 (defn- transform [f kw f-fail state]
-  (or (when (:gameover state) state)
-      (valid-state? (update-in state [:block kw] f))
-      (f-fail state)))
+  (if (:gameover state)
+    state
+    (or (valid-state? (-> state (update-in [:block kw] f) (with-meta {})))
+        (f-fail state))))
 
-(defn- take-block [state] 
-  (or (valid-state? (assoc state :block (:next-block state) :next-block (rand-nth blocks)))
+(defn- take-block [state]
+  (or (-> state (assoc :block (:next-block state) :next-block (rand-nth blocks))
+          (assoc-event :new-block true) valid-state?)
       (assoc state :gameover true :block nil)))
 
-(defn rot [state] (transform #(mod (inc %) (-> state :block :rotations count)) :current-rot identity state))
+(defn rot [state] (let [rot-nr (-> state :block :rotations count)]
+                    (transform #(mod (inc %) rot-nr) :current-rot identity state)))
 (defn l [state] (transform dec :x identity state))
 (defn r [state] (transform inc :x identity state))
 (defn d [state] (let [fail-f #(-> % commit-block clear-lines take-block)]
 		  (transform inc :y fail-f state)))
+
+(defn drop-block [state]
+  (let [state (with-meta state {})
+        drop-states (iterate d state)
+        drop-done (fn [s] (when (or (new-block? s)
+                                 (:gameover s)) s))]
+    (some drop-done drop-states)))
