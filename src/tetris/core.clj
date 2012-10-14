@@ -131,6 +131,18 @@
 ;; Tetris-game.
 (defrecord State [grid block next-block score lines level])
 
+;; ### Events
+;; Events only live for one transformation.  
+;; All events are forgotten after the next transformation.  
+;; At the moment only `:new-block?` and `:removed-lines` are used.
+
+(def events [:removed-lines :new-block?])
+
+(defn reset-events
+  "Returns `state` with all `events` as false"
+  [state]
+  (apply dissoc state events))
+
 (def empty-row (vec (repeat columns 0)))
 
 (defn build-state
@@ -144,9 +156,9 @@
         level 0]
    (State. grid block next-block score lines level)))
 
-;; ## Grid-related transformations.
+;; ## Grid-related conversions.
 ;; Used both for transformation of the current state and eventual
-;; graphic representation.
+;; visual representation.
 
 (defn- row->squares
   "Converts `row` to a vector of Square-records."
@@ -194,31 +206,10 @@
 
 (def row-full? (partial every? pos?))
 
-;; ## Events
-;; Events only live for one transformation.  
-;; All events are forgotten after the next transformation.  
-;; At the moment only `:new-block?` and `lines-cleared` are used.
-
-(defn- assoc-event
-  "Associates `event` keyword to `state` using metadata.  
-  All events are reset on `state` transformations.  
-  Used for `new-block` and `:lines-cleared` events."
-  [state event v]
-  (with-meta state (merge (meta state) {event v})))
-
-(defn get-event
-  "Returns any event associated with `kw`."
-  [state kw]
-  (-> state meta kw))
-
-(defn new-block?
-  "True if a new block was taken in the last `transform`."
-  [state]
-  (get-event state :new-block))
-
 (defn- clear-lines
   "Returns new state with any full rows removed.  
-  Also does some score-keeping."
+  Also does some score-keeping.  
+  Associates a `:removed-lines` with `state`."
   [{:keys [grid lines score level] :as state}]
   (if (not-any? row-full? grid)
     state
@@ -228,9 +219,12 @@
           new-grid (vec (concat new-lines removed-grid))
           new-score (+ score (score-lines removed-lines level))
           completed-lines (+ lines removed-lines)]
-      (-> state (assoc :lines completed-lines :grid new-grid
-             :score new-score :level (calc-level completed-lines))
-          (assoc-event :lines-cleared true)))))
+      (assoc state
+        :lines completed-lines
+        :grid new-grid
+        :score new-score
+        :level (calc-level completed-lines)
+        :removed-lines removed-lines))))
 
 ;; ## Transformations
 ;; Every transform of a state should happen here.  
@@ -242,17 +236,19 @@
   "Applies `f` to `kw` if resulting state is valid return it.  
   Else return `f-fail` applied to `state`)."
   [f kw f-fail state]
-  (if (:gameover state)
+  (if (:gameover? state)
     state
-    (or (valid-state? (-> state (update-in [:block kw] f) (with-meta {})))
+    (or (valid-state? (-> state (update-in [:block kw] f) reset-events))
         (f-fail state))))
 
 (defn- take-block
   "Returns new `state` updated with a new `block`"
   [state]
-  (or (-> state (assoc :block (:next-block state) :next-block (rand-nth blocks))
-          (assoc-event :new-block true) valid-state?)
-      (assoc state :gameover true :block nil)))
+  (or (-> state (assoc :block (:next-block state)
+                       :next-block (rand-nth blocks)
+                       :new-block? true)
+          valid-state?)
+      (assoc state :gameover? true :block nil)))
 
 (defn rot [state] (let [rot-nr (-> state :block :rotations count)]
                     (transform #(mod (inc %) rot-nr) :current-rot identity state)))
@@ -263,10 +259,9 @@
 
 (defn drop-block
   "Moves current block down until a `:new-block` event is seen,  
-  or if the state changes to gameover."
+  or if the state changes to :gameover?."
   [state]
-  (let [state (with-meta state {})
-        drop-states (iterate d state)
-        drop-done (fn [s] (when (or (new-block? s)
-                                 (:gameover s)) s))]
+  (let [drop-states (iterate d (reset-events state))
+        drop-done (fn [s] (when (or (:new-block? s)
+                                 (:gameover? s)) s))]
     (some drop-done drop-states)))

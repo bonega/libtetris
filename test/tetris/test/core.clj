@@ -20,7 +20,7 @@
        (l state) =not=> state
        (r state) =not=> state
        (d state) =not=> state
-       (nth (iterate drop-block state) 15) => #(:gameover %))
+       (nth (iterate drop-block state) 15) => #(:gameover? %))
 
 (facts "inside board" (-> (assoc-in state [:block :x] 10) valid-state?) => falsey
   (-> (assoc-in state [:block :x] -1) valid-state?) => falsey
@@ -29,4 +29,4 @@
   (valid-state? state) => state)
 
 (facts "events"
-  (-> state drop-block (get-event :new-block)) => true)
+  (-> state drop-block :new-block?) => true)

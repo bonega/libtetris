@@ -95,7 +95,7 @@
 (defn gravity [state]
   (when gravity-running
     (send-off *agent* gravity))
-  (if (:gameover @state)
+  (if (:gameover? @state)
      (reset! state (build-state))
      (swap! state d))
   (Thread/sleep gravity-sleep-ms)
