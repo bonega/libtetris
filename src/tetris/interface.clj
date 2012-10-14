@@ -10,9 +10,13 @@
 (def xsize 200)
 (def ysize 400)
 
-(def colormap {1 :black
- 	       2 :red
- 	       3 :blue})
+(def colormap {1 :red
+ 	       2 :cyan
+ 	       3 :orange
+               4 :blue
+               5 :green
+               6 :magenta
+               7 :yellow})
 
 (def animation-sleep-ms 15)
 (def gravity-sleep-ms 400)
