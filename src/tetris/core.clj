@@ -1,13 +1,9 @@
 ;; ## A functional Tetris
 ;; To start with an immutable state do: `(build-state)`.  
-;; 'Modify' a state by transforming the state with a
-;; move-function:
+;; 'Modify' a state by transforming it with one of the
+;; move-functions:
 ;;
-;; * `rot`
-;; * `d`
-;; * `l`
-;; * `r`
-;; * `drop-block`
+;;     [rot d l r drop-block]
 ;;
 ;; Example ```(-> (build-state) l l l drop-block) ```  
 ;; Moves the block three units to the left and then
@@ -18,10 +14,10 @@
 (def columns 10)
 (def rows 20)
 
-;; ## Grid representation:
+;; ## Grid representation
 ;; A grid is a 2d vector of numbers.  
 ;; All positive numbers correspond to a occupied cell.  
-;; Said cell is considered to have the same color as the value.  
+;; The number usually represents a color in a draw-function  
 ;; A non-positive value is considered empty.
 ;; Example:  
 ;;
@@ -31,7 +27,7 @@
 ;;      [ 0 1 ]]
 
 
-;; ## Block record.
+;; ## Block record
 ;; Every block have a `x` and `y` position.  
 ;; `rotations` are defined as a vector of `grid`.  
 ;; `current-rot` is the offset to the `rotations`-vector.
@@ -42,7 +38,7 @@
   Rotations are a vector of grids."
   [& rotations] (Block. 4 0 rotations 0))
 
-;; ## Definition of blocks.
+;; ## Definition of blocks
 (def i-block (make-block
               [[ 0 1 ]
                [ 0 1 ]
@@ -126,7 +122,7 @@
 
 (defrecord Square [x y color])
 
-;; ## State record.
+;; ## State record
 ;; State keeps track of all parts necessary to drive a simple
 ;; Tetris-game.
 (defrecord State [grid block next-block score lines level])
@@ -156,7 +152,7 @@
         level 0]
    (State. grid block next-block score lines level)))
 
-;; ## Grid-related conversions.
+;; ## Grid-related conversions
 ;; Used both for transformation of the current state and eventual
 ;; visual representation.
 
@@ -175,6 +171,8 @@
   "Converts `block` to `grid`."
   [{:keys [rotations current-rot]}]
   (nth rotations current-rot))
+
+;; ## Grid manipulating
 
 (defn- set-square
   "Returns a new `grid` or nil if the `square` placement is invalid."
@@ -199,10 +197,6 @@
         offset-squares (map offset squares)
         new-grid (set-squares grid offset-squares)]
     (when new-grid (assoc state :grid new-grid))))
-
-(defn- valid-state?
-  "Returns merged `state` or just `state`."
-  [state] (when (commit-block state) state))
 
 (def row-full? (partial every? pos?))
 
@@ -231,6 +225,11 @@
 ;; `transform` is the main concern here.  
 ;; It is used to ensure that we newer see an invalid state.  
 ;; Don`t try to manipulate the grid directly.
+
+(defn- valid-state?
+  "Returns merged `state` if it's valid.  
+  Else just return the original `state`."
+  [state] (when (commit-block state) state))
 
 (defn- transform
   "Applies `f` to `kw` if resulting state is valid return it.  

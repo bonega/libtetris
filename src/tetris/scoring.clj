@@ -1,6 +1,6 @@
-;; ## Settle the score.
+;; ## Settle the score
 ;; Rules extracted from Colin Fahey's nice writeup on Tetris:
-;; http://www.colinfahey.com/tetris/tetris.html
+;; [Colin's page](http://www.colinfahey.com/tetris/tetris.html)
 
 (ns tetris.scoring)
 
