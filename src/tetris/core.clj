@@ -153,7 +153,7 @@
           completed-lines (+ lines removed-lines)]
       (-> state (assoc :lines completed-lines :grid new-grid
              :score new-score :level (calc-level completed-lines))
-          (assoc-event :lines-cleared)))))
+          (assoc-event :lines-cleared true)))))
 
 
 (defn- transform [f kw f-fail state]
