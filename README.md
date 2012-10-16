@@ -11,8 +11,12 @@ Look at the [documentation](http://bonega.github.com/libtetris/index.html)
 ``` clojure
 (-> (build-state) r d d rot d d)
 ```
-
 This will return an immutable state.
+
+### Clojurescript example
+
+Look at the [clojurescript](http://bonega.github.com/libtetris/index.html) implementation.
+Or play the [game](http://bonega.github.com/cljs-tetris/index.html)!
 
 ## Installation
 
