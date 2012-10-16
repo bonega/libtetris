@@ -1,12 +1,12 @@
-(ns tetris.test.core
-  (:use midje.sweet tetris.core))
+(ns libtetris.test.core
+  (:use midje.sweet libtetris.core))
 
 (defn refer-private [ns]
   (doseq [[symbol var] (ns-interns ns)]
     (when (:private (meta var))
       (intern *ns* symbol var))))
 
-(refer-private 'tetris.core)
+(refer-private 'libtetris.core)
 
 (def state (assoc (build-state) :block t-block ))
 (def drop-states (iterate drop-block state))

@@ -2,11 +2,11 @@
 ;; Rules extracted from Colin Fahey's nice writeup on Tetris:
 ;; [Colin's page](http://www.colinfahey.com/tetris/tetris.html)
 
-(ns tetris.scoring)
+(ns libtetris.scoring)
 
 (defn calc-level
   "Calculates level from total number of `lines` removed.  
-  Max level is 10 and starts at 92 lines."
+  Max level is 10 and starts at 91 lines."
   [lines]
   (cond
    (> lines 91) 10

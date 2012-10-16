@@ -1,4 +1,4 @@
-;; ## A functional Tetris
+;; ## A functional library for Tetris
 ;; To start with an immutable state do: `(build-state)`.  
 ;; 'Modify' a state by transforming it with one of the
 ;; move-functions:
@@ -8,8 +8,8 @@
 ;; Example ```(-> (build-state) l l l drop-block) ```  
 ;; Moves the block three units to the left and then
 ;; drops the block down until it reaches the bottom.
-(ns tetris.core
-  (:use [tetris.scoring :only [calc-level score-lines]]))
+(ns libtetris.core
+  (:use [libtetris.scoring :only [calc-level score-lines]]))
 
 (def columns 10)
 (def rows 20)
@@ -26,6 +26,10 @@
 ;;      [ 0 1 ]
 ;;      [ 0 1 ]]
 
+(defn grid->str
+  "Returns `grid` converted to a nicely formatted string."
+  [grid]
+  (apply str (mapcat #(conj % \newline) grid)))
 
 ;; ## Block record
 ;; Every block have a `x` and `y` position.  
@@ -125,7 +129,15 @@
 ;; ## State record
 ;; State keeps track of all parts necessary to drive a simple
 ;; Tetris-game.
-(defrecord State [grid block next-block score lines level])
+;; Implements `toString`, `str` returns a nicely formatted string.
+(defrecord State [grid block next-block score lines level]
+  Object
+  (toString [_] (grid->str grid)))
+
+(defn print-state
+  "Prints a nicely formatted representation of the state"
+  [state]
+  (-> state str print))
 
 ;; ### Events
 ;; Events only live for one transformation.  

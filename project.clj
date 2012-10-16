@@ -1,5 +1,5 @@
-(defproject tetris "1.0.0-SNAPSHOT"
-  :description "FIXME: write"
-  :dependencies [[org.clojure/clojure "1.4.0"] 
-                 [seesaw "1.4.2"]]
+(defproject libtetris "0.1.0"
+  :description "Tetris-library for Clojure"
+  :url "https://github.com/bonega/libtetris"
+  :dependencies [[org.clojure/clojure "1.4.0"]]
   :profiles {:dev {:dependencies [[midje "1.4.0"]]}})

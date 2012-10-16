@@ -1,5 +1,5 @@
-(ns tetris.test.scoring
-  (:use midje.sweet tetris.scoring))
+(ns libtetris.test.scoring
+  (:use midje.sweet libtetris.scoring))
 
 (facts "score"
   (score-lines 1 0) => 40
