@@ -3028,8 +3028,8 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>tetris -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">tetris</h1><h2 class="project-version">0.1.0</h2><br /><p>Tetris-library for Clojure</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.4.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#tetris.core">tetris.core</a></li><li><a href="#tetris.scoring">tetris.scoring</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tetris.core" name="tetris.core"><h1 class="project-name">tetris.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>A functional library for Tetris</h2>
+</script><title>libtetris -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">libtetris</h1><h2 class="project-version">0.1.0</h2><br /><p>Tetris-library for Clojure</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.4.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#libtetris.core">libtetris.core</a></li><li><a href="#libtetris.scoring">libtetris.scoring</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#libtetris.core" name="libtetris.core"><h1 class="project-name">libtetris.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>A functional library for Tetris</h2>
 
 <p>To start with an immutable state do: <code>(build-state)</code>. <br />
 'Modify' a state by transforming it with one of the
@@ -3041,8 +3041,8 @@ move-functions:</p>
 <p>Example <code>(-&gt; (build-state) l l l drop-block)</code> <br />
 Moves the block three units to the left and then
 drops the block down until it reaches the bottom.</p>
-</td><td class="codes"><pre class="brush: clojure">(ns tetris.core
-  (:use [tetris.scoring :only [calc-level score-lines]]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns libtetris.core
+  (:use [libtetris.scoring :only [calc-level score-lines]]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def columns 10)
 (def rows 20)</pre></td></tr><tr><td class="docs"><h2>Grid representation</h2>
 
@@ -3057,7 +3057,10 @@ Example:  </p>
  [ 0 1 ]
  [ 0 1 ]]
 </code></pre>
-</td><td class="codes"></td></tr><tr><td class="docs"><h2>Block record</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Returns <code>grid</code> converted to a nicely formatted string.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn grid-&gt;str
+  [grid]
+  (apply str (mapcat #(conj % \newline) grid)))</pre></td></tr><tr><td class="docs"><h2>Block record</h2>
 
 <p>Every block have a <code>x</code> and <code>y</code> position. <br />
 <code>rotations</code> are defined as a vector of <code>grid</code>. <br />
@@ -3130,8 +3133,14 @@ Example:  </p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Square [x y color])</pre></td></tr><tr><td class="docs"><h2>State record</h2>
 
 <p>State keeps track of all parts necessary to drive a simple
-Tetris-game.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord State [grid block next-block score lines level])</pre></td></tr><tr><td class="docs"><h3>Events</h3>
+Tetris-game.
+Implements <code>toString</code>, <code>str</code> returns a nicely formatted string.</p>
+</td><td class="codes"><pre class="brush: clojure">(defrecord State [grid block next-block score lines level]
+  Object
+  (toString [_] (grid-&gt;str grid)))</pre></td></tr><tr><td class="docs"><p>Prints a nicely formatted representation of the state</p>
+</td><td class="codes"><pre class="brush: clojure">(defn print-state
+  [state]
+  (-&gt; state str print))</pre></td></tr><tr><td class="docs"><h3>Events</h3>
 
 <p>Events only live for one transformation. <br />
 All events are forgotten after the next transformation. <br />
@@ -3238,13 +3247,13 @@ Don`t try to manipulate the grid directly.</p>
   (let [drop-states (iterate d (reset-events state))
         drop-done (fn [s] (when (or (:new-block? s)
                                  (:gameover? s)) s))]
-    (some drop-done drop-states)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tetris.scoring" name="tetris.scoring"><h1 class="project-name">tetris.scoring</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Settle the score</h2>
+    (some drop-done drop-states)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#libtetris.scoring" name="libtetris.scoring"><h1 class="project-name">libtetris.scoring</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Settle the score</h2>
 
 <p>Rules extracted from Colin Fahey's nice writeup on Tetris:
 <a href="http://www.colinfahey.com/tetris/tetris.html">Colin's page</a></p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns tetris.scoring)</pre></td></tr><tr><td class="docs"><p>Calculates level from total number of <code>lines</code> removed. <br />
-  Max level is 10 and starts at 92 lines.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns libtetris.scoring)</pre></td></tr><tr><td class="docs"><p>Calculates level from total number of <code>lines</code> removed. <br />
+  Max level is 10 and starts at 91 lines.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn calc-level
   [lines]
   (cond
