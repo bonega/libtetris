@@ -15,7 +15,7 @@ This will return an immutable state.
 
 ### Clojurescript example
 
-Look at the [clojurescript](http://bonega.github.com/libtetris/index.html) implementation.
+Look at the [clojurescript](https://github.com/bonega/cljs-tetris)implementation.
 Or play the [game](http://bonega.github.com/cljs-tetris/index.html)!
 
 ## Installation
