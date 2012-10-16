@@ -1,6 +1,6 @@
-# tetris
+# Libtetris
 
-Example of a functional Tetris-library implemented in Clojure.
+Example of a Tetris-library implemented in Clojure.
 
 The core logic is completely functional.
 
@@ -15,7 +15,7 @@ This will return an immutable state.
 
 ### Clojurescript example
 
-Look at the [clojurescript](https://github.com/bonega/cljs-tetris)implementation.
+Look at the [clojurescript](https://github.com/bonega/cljs-tetris) implementation.
 Or play the [game](http://bonega.github.com/cljs-tetris/index.html)!
 
 ## Installation
